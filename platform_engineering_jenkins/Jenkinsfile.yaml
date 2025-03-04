@@ -1,0 +1,31 @@
+name: CI/CD Pipeline
+'on':
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: REGISTRYIP
+      run: '#!/bin/bash'
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: DaggupatiPavan/java-web-app-docker
+    - name: Build
+      run: '#!/bin/bash
+
+        mvn clean install'
+    - name: Build Docker Image
+      run: '#!/bin/bash
+
+        docker build -t ${imageName} .
+
+        docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWD}
+
+        docker push ${imageName}'
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: DaggupatiPavan/java-web-app-docker

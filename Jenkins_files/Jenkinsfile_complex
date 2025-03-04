@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Code') {
+            steps {
+                // Step 1: Clone the repository
+                git branch: 'main', url: 'https://github.com/DaggupatiPavan/java-web-app-docker.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                // Step 2: Build the project with Maven
+                withMaven(maven: 'Maven 3') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                // Step 3: Build the Docker image
+                sh 'docker build -t bhargavmanepalli/my-custom-image .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                // Step 4: Push the Docker image to Docker Hub
+                withDockerRegistry([url: 'https://index.docker.io/v1/', credentialsId: 'docker-hub-credentials']) {
+                    sh 'docker push bhargavmanepalli/my-custom-image'
+                }
+            }
+        }
+    }
+}

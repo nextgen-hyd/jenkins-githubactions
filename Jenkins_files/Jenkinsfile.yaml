@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+'on':
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: DaggupatiPavan/java-web-app-docker
+    - name: Build
+      run: '#!/bin/bash
+
+        mvn clean install
+
+        echo maven completed'
+    - name: Set up SonarQube environment
+      uses: sonarsource/sonarqube-scan-action@v1.0
+      with:
+        sonarQubeEnv:
+          credentialsId: sonarQube
+          installationName: QualityChecks
+    - name: SonarQube
+      run: '#!/bin/bash
+
+        mvn clean verify sonar:sonar -Dsonar.projectKey=genai -Dsonar.projectName=''genai'''
+    - name: Test
+      run: '#!/bin/bash
+
+        mvn test'
+    - name: Write Dockerfile
+      run: '#!/bin/bash
+
+        echo "FROM openjdk:8-jre" >> Dockerfile
+
+        echo "EXPOSE 8080" >> Dockerfile
+
+        echo "COPY target/*.jar /usr/src/myapp.jar" >> Dockerfile'
+    - name: Docker Build
+      run: '#!/bin/bash
+
+        docker build -t pavan176/webapp:v.0.1 .'
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Push to DockerHub
+      run: '#!/bin/bash
+
+        docker push pavan176/webapp:v.0.1'
+    - name: Deploy as Pod
+      run: '#!/bin/bash
+
+        kubectl delete pod paltoalto || true
+
+        kubectl run paltoalto --image=pavan176/webapp:v.0.1'

@@ -1,0 +1,29 @@
+name: CI/CD Pipeline
+'on':
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: DaggupatiPavan/java-web-app-docker
+    - name: Build using Maven
+      run: '#!/bin/bash
+
+        mvn install'
+    - name: call
+      run: 'echo "Echo message #1"
+
+        echo "Echo message #2"
+
+        echo "Echo message #3"'
+    - name: test
+      run: 'echo "Echo message #1"
+
+        echo "Echo message #2"
+
+        echo "Echo message #3"'

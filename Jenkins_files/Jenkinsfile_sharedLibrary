@@ -1,0 +1,43 @@
+@Library('mySharedLibrary') _
+
+pipeline {
+    agent any
+    parameters {
+        string(name: 'branch', defaultValue: 'master', description: 'Enter Branch name here')
+        string(name: 'url', defaultValue: 'https://github.com/Bhargav-manepalli/java-web-app-docker.git', description: 'Enter Branch name here')
+    }
+    stages {
+
+        stage("Clone the git repo") {
+            steps {
+                git url: "https://github.com/Bhargav-manepalli/java-web-app-docker.git", branch: "master"
+            }
+        }
+        stage("Build using Maven") {
+            steps {
+                sh "mvn install"
+            }
+        }
+        stage("Archive the artifact") {
+            steps {
+                archiveArtifacts artifacts: '**/target/*.war'
+            }
+        }
+        stage("some scripts") {
+            steps {
+                script {
+                    echoMessage.call()  
+                }
+            }
+        }
+        stage("more scripts") {
+            steps {
+                script {
+                    echoMessage.test()
+                }
+            }
+        }
+
+        
+    }
+}

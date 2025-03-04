@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/AbhishekRaoV/ubiq.git'
+            }
+        }
+
+        stage('Create an EC2 Instance') {
+            steps {
+                script{
+                sh "terraform init"
+                sh "terraform validate"
+                sh "terraform plan"
+                sh "terraform apply --auto-approve"
+                
+                }
+            }
+        }
+
+        stage('Install K8s and Docker') {
+            steps {
+                script {
+                    sh '''
+                        IP_ADDRESSES=$(terraform output instance_ip | jq -r)
+                        > myinventory
+                        echo "auctane ansible_ssh_host=ubuntu@${IP_ADDRESSES}" >> myinventory
+                        cat myinventory
+                        '''
+                    sleep(40);
+                    // Install Kubernetes and Docker
+                    sh '''
+                    ansible-playbook -i myinventory ks8_install.yaml
+                    ansible-playbook -i myinventory docker.yaml
+
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                   
+                        sh "docker build -t 10.63.16.153:32003/ubiq:${BUILD_NUMBER} ."
+                    
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    sh "docker push 10.63.16.153:32003/ubiq:${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh '''
+                    IP_ADDRESSES=$(terraform output instance_ip | jq -r)
+                    ansible-playbook -i myinventory deploy.yaml
+                    ssh ubuntu@${IP_ADDRESSES} "kubectl create secret docker-registry regcred --docker-server=http://10.63.12.180:32003 --docker-username=admin --docker-password=admin"
+                    ssh ubuntu@${IP_ADDRESSES} "kubectl apply -f pod.yaml"
+                    ssh ubuntu@${IP_ADDRESSES} "kubectl expose pod ubiq --type=NodePort --port=80"
+                     '''
+                     sleep(20);
+                    sh '''
+                    IP_ADDRESSES=$(terraform output instance_ip | jq -r)
+                    ssh ubuntu@${IP_ADDRESSES} "kubectl get pods -A"
+                    ssh ubuntu@${IP_ADDRESSES} "kubectl get svc -A"
+                    '''
+                   
+                }
+            }
+        }
+    }
+    post{
+        always{
+            sh "terraform destroy --auto-approve"
+        }
+    }
+}

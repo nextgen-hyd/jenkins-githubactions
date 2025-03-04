@@ -1,0 +1,558 @@
+pipeline {
+    agent any
+    
+    parameters {
+        string(name: 'PROJECT_NAME', defaultValue: '', description: 'Project Name')
+        string(name: 'PROJECT_DESCRIPTION', defaultValue: '', description: 'Project description')
+        string(name: 'CLOUD_PROVIDER', defaultValue: '', description: 'Cloud Provider')
+        string(name: 'ACCESS_KEY', defaultValue: '', description: 'Access Key')
+        string(name: 'SECRET_KEY', defaultValue: '', description: 'Secret Key')
+        string(name: 'ENERGY_LEAKS_URL', defaultValue: '', description: 'Project URL for Energy Leaks')
+        string(name: 'ENERGY_LEAKS_BRANCH', defaultValue: '', description: 'Branch for Energy Leaks')
+        string(name: 'ML_JOB_CONSUMPTION_CODE_URL', defaultValue: '', description: 'Code URL for ML Job Consumption')
+        string(name: 'ENERGY_METRICS_SERVER_IP', defaultValue: '', description: 'Server IP for Energy Metrics')
+        string(name: 'ENERGY_METRICS_USERNAME', defaultValue: '', description: 'Username for Energy Metrics')
+        string(name: 'ENERGY_METRICS_PASSWORD', defaultValue: '', description: 'Password for Energy Metrics')
+        string(name: 'WORKLOAD_BENCHMARKING_APP', defaultValue: '', description: 'Enter app deploy URL')
+        string(name: 'WORKLOAD_BENCHMARKING_WORKLOAD', defaultValue: '', description: 'Enter workload deploy URL')
+        string(name: 'WORKLOAD_BENCHMARKING_INSTANCE', defaultValue: '', description: 'Enter Instance type')
+        string(name: 'TURN_OFF_WORKLOADS_WEEKDAYS', defaultValue: '', description: 'Weekdays for Turn Off Workloads')
+        string(name: 'TURN_OFF_WORKLOADS_START_TIME', defaultValue: '', description: 'Start time for Turn Off Workloads')
+        string(name: 'TURN_OFF_WORKLOADS_STOP_TIME', defaultValue: '', description: 'Stop time for Turn Off Workloads')
+        string(name: 'TURN_OFF_WORKLOADS_WEEKENDS', defaultValue: '', description: 'Apply to weekends for Turn Off Workloads')
+        string(name: 'PRECHECKS_TOOL', defaultValue: '', description: 'Tools selected for Prechecks')
+    }
+    
+    environment {
+        MYSQL_HOST = '10.63.14.112'
+        MYSQL_USER = 'root'
+        MYSQL_PASSWORD = 'admin'
+        MYSQL_DATABASE = 'mysql'
+    }
+    
+    stages {
+        // stage('Initialize') {
+        //     steps {
+        //         script {
+        //             echo 'Initializing the pipeline...'
+            
+        //     // Cloning the git repository
+        //     git url: "http://10.63.32.87/sustainable-green-it/greenIT.git", credentialsId: "gitlab-syam", branch: "sustain_ui"
+            
+        //     // Define the MySQL execution function first
+        //     def executeMySQLCommand = { String command ->
+        //         sh """
+        //             mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${command}"
+        //         """
+        //     }
+        //     executeMySQLCommand("""
+        //             CREATE TABLE IF NOT EXISTS sustainability_projects (
+        //                 sno INT AUTO_INCREMENT PRIMARY KEY,
+        //                 application_name VARCHAR(255) UNIQUE,
+        //                 application_description VARCHAR(255),
+        //                 cloud_provider VARCHAR(255),
+        //                 last_analyzed_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        //                 sustainability_level VARCHAR(255)
+        //             );
+        //              """)
+
+        //     // Check if project exists
+        //     def sustainability_projectExists = sh(
+        //         script: """
+        //             mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "SELECT COUNT(*) FROM sustainability_projects WHERE application_name='${params.PROJECT_NAME}'" -s -N
+        //         """,
+        //         returnStdout: true
+        //     ).trim()
+
+        //     if (sustainability_projectExists == "0") {
+        //         echo "running"
+        // //           executeMySQLCommand(""" 
+        // //             INSERT INTO sustainability_projects (application_name, application_description, cloud_provider, sustainability_level)
+        // // VALUES ('${params.PROJECT_NAME}', '${params.PROJECT_DESCRIPTION}', '${params.CLOUD_PROVIDER}', 'Analyzing');
+        // //         """)
+        //     } 
+        // else {
+        //         executeMySQLCommand("""
+        //             UPDATE sustainability_projects
+        //             SET last_analyzed_on = CURRENT_TIMESTAMP
+        //             WHERE application_name = '${params.PROJECT_NAME}';
+        //         """)
+        //     }
+
+
+        //             // Create the table if it doesn't exist
+        //             executeMySQLCommand("""
+        //                 CREATE TABLE IF NOT EXISTS sustainability_assessments (
+        //                     project_name VARCHAR(255),
+        //                     area VARCHAR(255),
+        //                     action_description VARCHAR(255),
+        //                     implemented VARCHAR(10),
+        //                     maturity_level VARCHAR(50)
+        //                 );
+        //             """)
+                    
+        //             // Check if the project already exists
+        //             def projectExists = sh(
+        //                 script: """
+        //                     mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "SELECT COUNT(*) FROM sustainability_assessments WHERE project_name='${params.PROJECT_NAME}'" -s -N
+        //                 """,
+        //                 returnStdout: true
+        //             ).trim()
+                    
+        //             if (projectExists == "0") {
+        //                 // Insert actions if project does not exist
+        //                 def actions = [
+        //                 ['Design', 'Sustainability as NFR', 3],
+        //                 ['Design', 'Minimal Architecture (i.e. Developing minimal software for value)', 4],
+        //                 ['Design', 'Replace long-running service with a simple Function as a Service', 4],
+        //                 ['Design', 'Asynchronous processing and event-driven architectures', 4],
+        //                 ['Design', 'API Design: protocol (TCP, UDP, custom wire protocols)', 4],
+        //                 ['Design', 'API Design: data format used for request/response of your APIs : Protobuf/gRPC is better compared to JSON, XML', 3],
+        //                 ['Design', 'API Design: Avro schemas instead of JSON for data serialization', 3],
+        //                 ['Design', 'Reusable APIs vs P2P Integrations', 4],
+        //                 ['Design', 'Choice of programming language: Go, Rust over Python, Java; Java 17 is better with respect to memory optimization', 4],
+        //                 ['Design', 'Public cloud, choice of provider, and region', 4],
+        //                 ['Design', 'Platform as a Service (PaaS) and Serverless (e.g., Function as a Service (FaaS))', 4],
+        //                 ['Design', 'Containers and Kubernetes - Adopting energy efficient architectures such as containers or serverless', 3],
+        //                 ['Design', 'Scheduling and batch vs. real-time - Demand Shaping', 4],
+        //                 ['Design', 'Carbon awareness into the Kubernetes Scheduler', 5],
+        //                 ['Design', 'Cost and Sustainability: Reducing operational costs and sustainability are aligned', 5],
+        //                 ['Design', 'Enforce Quotas and Rate Limiting', 3],
+        //                 ['Design', 'Reduce the Network Footprint', 4],
+        //                 ['Design', 'Identify energy utilization of applications across different design choices', 3],
+        //                 ['Design', 'Optimize data generation of applications', 4],
+        //                 ['Design', 'Create reusable modules to minimize development and maintenance efforts', 3],
+        //                 ['Design', 'Enable parallel processing using distributed computing and minimize energy consumption', 4],
+        //                 ['Design', 'Measure KPIs on the features used by customers and remove unused features', 4],
+        //                 ['Design', 'Energy saving mode for applications, system processes during periods of low load', 4],
+        //                 ['Design', 'Energy budgets for applications', 5],
+        //                 ['Design', 'Create Energy profile for application (Core Vs Non core tasks - Logging, Monitoring, Audit, Redundancy etc...)', 5],
+        //                 ['Design', 'Improve resilience of equipment to minimize redundancy (Ensure legacy hardware is able to support at least core features of software)', 5],
+        //                 ['Design', 'Shared libraries for applications', 3],
+        //                 ['Design', 'Server-side rendering (SSR): With SSR, a web page’s HTML is generated on the server and sent to the client, resulting in quicker initial load times and improved search engine optimization', 3],
+        //                 ['Design', 'React frameworks: Next.js as a framework has many built-in features for energy optimization', 3],
+        //                 ['Design', 'Progressive Web Applications (Hybrid of native and web apps) are more energy efficient', 3],
+        //                 ['Design', 'Optimize availability and scalability needs for application', 4],
+        //                 ['Development', 'Energy metrics for application using Intel RAPL, Kepler, Schaphandre', 2],
+        //                 ['Development', 'Simplicity and Efficiency Trade-offs while developing algorithms', 3],
+        //                 ['Development', 'Efficient Software Algorithms and data structures', 3],
+        //                 ['Development', 'Efficient integration and delivery pipelines (Dev, Test, CI env)', 4],
+        //                 ['Development', 'On demand development environments', 3],
+        //                 ['Development', 'Minimizing unnecessary code execution', 4],
+        //                 ['Development', 'Utilizing lazy loading', 3],
+        //                 ['Development', 'Optimize energy consumption for Python and Java applications', 3],
+        //                 ['Development', 'Energy consumption of ML job, Model training', 4],
+        //                 ['Development', 'Optimize source code for energy and carbon emissions using static code analysis', 3],
+        //                 ['Development', 'Leverage LLMs to suggest energy efficient algorithms for Java / Python applications in IDE', 4],
+        //                 ['Development', 'Provide configurable deployment of applications with selected features to minimize resource utilization', 5],
+        //                 ['Development', 'Calculate energy utilization at function level', 4],
+        //                 ['Development', 'Optimize energy utilization of applications using AI/ML', 4],
+        //                 ['Development', 'Memory optimization for applications', 3],
+        //                 ['Development', 'Rightsizing containers and VMs based on resource utilization', 3],
+        //                 ['Development', 'Compare and suggest open-source tools which are energy efficient', 3],
+        //                 ['Development', 'Train models with custom rules for optimization of code', 5],
+        //                 ['Development', 'Compare memory and energy utilization of docker and multi-stage docker files', 2],
+        //                 ['Development', 'Suggest optimized version of built-in functions which are energy efficient in IDE / static analyzer', 4],
+        //                 ['Development', 'Code splitting - Convert code to smaller files which can be loaded on-demand', 3],
+        //                 ['Development', 'Tree shaking: This technique helps reduce the overall application size by removing unused code from the final build, thus optimizing the web product and minimizing resource consumption', 4],
+        //                 ['Development', 'Split large code repositories', 4],
+        //                 ['Development', 'Remove dead code and unused data from application', 3],
+        //                 ['Quality', 'Code and design review for sustainability', 3],
+        //                 ['Quality', 'Document decisions using Key Design Decisions (KDDs) or Architectural Decision Records (ADRs)', 4],
+        //                 ['Quality', 'Profiling tools and static analysis - Code profiling and optimization tools', 3],
+        //                 ['Quality', 'Upgrade Runtimes and Modules', 3],
+        //                 ['Quality', 'Change aware testing', 4],
+        //                 ['Quality', 'Test Case Optimization', 3],
+        //                 ['Quality', 'Risk Based Testing', 4],
+        //                 ['Quality', 'On-demand and scalable Test Environments', 4],
+        //                 ['Storage', 'Dynamic provisioning of volumes for EC2 instance / Pod to automatically scale the storage size', 3],
+        //                 ['Storage', 'Identify and remove unused data and resources in cloud', 3],
+        //                 ['Storage', 'Implementing data retention, archival and deletion policies', 1],
+        //                 ['Storage', 'Utilize caching to store frequently used data', 4],
+        //                 ['Storage', 'Optimize log and metrics collection', 4],
+        //                 ['Network', 'Optimize data transfer (Implement local data processing, aggregation and compression techniques to avoid transfer of frequent, large amounts of data)', 3],
+        //                 ['Network', 'Compare energy efficiency for synchronous (REST vs gRPC) and Asynchronous (Kafka vs RabbitMQ) messaging between microservices', 3],
+        //                 ['Deployment', 'Deploy application in a region that is closest to users', 3],
+        //                 ['Deployment', 'Tagging of resources to track usage', 1],
+        //                 ['Deployment', 'Calculate energy utilization for provisioned resources and show recommendations to deployment teams', 2],
+        //                 ['Deployment', 'Identify and share report on unused resources', 2],
+        //                 ['Deployment', 'Turn off workloads and node pools outside of business hours', 1],
+        //                 ['Deployment', 'Deploy in regions that are powered by renewables or energy efficient resources', 3],
+        //                 ['Deployment', 'Show energy efficient resource provisioning options during provisioning', 3],
+        //                 ['Deployment', 'Implement pre-checks for common issues in CI/CD pipeline to avoid failures in different stages of pipeline', 2],
+        //                 ['Deployment', 'Energy efficient workload scheduling', 4],
+        //                 ['Deployment', 'CPU frequency optimization for non-critical workloads', 4],
+        //                 ['Deployment', 'Alerts during resource provisioning (to avoid over provisioning) about energy consumption and energy efficient options', 3],
+        //                 ['Deployment', 'Calculate and minimize energy utilization per transaction', 4],
+        //                 ['Deployment', 'Implement automated decision between horizontal vs vertical scaling of applications', 4],
+        //                 ['Deployment', 'Set up minimal artifacts - Reduce disk, memory and processing demands by considering the software for a given purpose', 3],
+        //                 ['Deployment', 'Workload allocation on energy efficient servers, VMs', 3],
+        //                 ['Deployment', 'Schedule resource intensive tasks to execute when renewable energy source is available', 4],
+        //                 ['Deployment', 'Consolidate application workloads to maximize server utilization and move idle servers to low power mode', 2],
+        //                 ['Deployment', 'Measure (Idle/Normal/Peak) energy consumption of resources and identify scope for optimizations (Get power consumption per CPU core information from processor type)', 3],
+        //                 ['Deployment', 'Identify unused resources in K8s using KOR tool', 2],
+        //                 ['Operations', 'Automated sustainability maturity assessment for applications', 4],
+        //                 ['Operations', 'Observability and CarbonOps', 4],
+        //                 ['Operations', 'Automation', 3],
+        //                 ['Operations', 'Switching instances to chipsets that offer the same processing power at lower levels of energy consumption', 3],
+        //                 ['Operations', 'Sustainable DevOps practices integrate sustainability into the software delivery process', 4],
+        //                 ['Operations', 'Optimize resource allocation using ML', 4],
+        //                 ['Operations', 'Maximize utilization of resources', 3],
+        //                 ['Operations', 'Spot Instances', 3],
+        //                 ['Operations', 'Setup sustainability goals for infrastructure, development and applications and monitor them using dashboards and reports', 3],
+        //                 ['Operations', 'Reduce the cooling requirements of servers by ensuring that applications (servers) run in optimal temperature range', 4],
+        //                 ['Operations', 'Identify zombie workloads that consume resources (e.g., Application not running within container / VM)', 3],
+        //                 ['Operations', 'Dashboard for resource utilization at cluster, node, and pod level and also grouped by applications in Kubernetes', 3]
+
+        //             ]
+                        
+        //                 actions.each { action ->
+        //                     executeMySQLCommand("""
+        //                         INSERT INTO sustainability_assessments (project_name, area, action_description, implemented, maturity_level)
+        //                         VALUES ('${params.PROJECT_NAME}', '${action[0]}', '${action[1]}', 'no', '${action[2]}');
+        //                     """)
+        //                 }
+        //             } else {
+        //                 echo "Project ${params.PROJECT_NAME} already exists. Skipping table creation and insertion."
+        //             }
+        //         }
+        //     }
+        // }
+        
+        stage('Energy Leaks') {
+            when {
+                expression { params.PROJECT_NAME && params.ENERGY_LEAKS_URL && params.ENERGY_LEAKS_BRANCH }
+            }
+            steps {
+                echo "Energy Leaks stage:"
+                echo "Project Name: ${params.PROJECT_NAME}"
+                echo "Project URL: ${params.ENERGY_LEAKS_URL}"
+                echo "Branch: ${params.ENERGY_LEAKS_BRANCH}"
+                git url: "${params.ENERGY_LEAKS_URL}", credentialsId: "gitlab-syam", branch: "${params.ENERGY_LEAKS_BRANCH}"
+                script {
+                    sh "echo 'sonar.projectKey=${params.PROJECT_NAME}' > sonar-project.properties"
+                    // def scannerHome = tool 'sonar-scanner';
+                    // withSonarQubeEnv() {
+                    //     sh "bash ${scannerHome}/bin/sonar-scanner"
+                    // }
+                    // def updateStatusCommand = """
+                    //     UPDATE sustainability_assessments
+                    //     SET implemented = 'yes'
+                    //     WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Development' AND action_description = 'Optimize source code for energy and carbon emissions using static code analysis';
+                    // """
+                    // sh """
+                    //     mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    // """
+                    // def updateStatusCommand2 = """
+                    //     UPDATE sustainability_assessments
+                    //     SET implemented = 'yes'
+                    //     WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Development' AND action_description = 'Compare memory and energy utilization of docker and multi-stage docker files';
+                    // """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand2}"
+                    """
+                }
+            }
+        }
+        
+        stage('ML Job Consumption') {
+            when {
+                expression { params.ML_JOB_CONSUMPTION_CODE_URL }
+            }
+            steps {
+                echo "ML Job Consumption stage:"
+                
+                echo "Code URL: ${params.ML_JOB_CONSUMPTION_CODE_URL}"
+                
+              git url: "http://10.63.32.87/sustainable-green-it/greenIT.git", credentialsId: "gitlab-syam", branch: "sustain_ui"
+                
+                sh "ansible-playbook update_emissions_py.yaml -e code_url=${params.ML_JOB_CONSUMPTION_CODE_URL} && pip3 install -r requirements.txt && python3 code_carbon.py "
+                
+                archiveArtifacts artifacts: 'emissions.csv', allowEmptyArchive: true
+                
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Development' AND action_description = 'Energy consumption of ML job, Model training';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        
+        stage('Energy Metrics') {
+            when {
+                expression { params.ENERGY_METRICS_SERVER_IP || params.ENERGY_METRICS_USERNAME || params.ENERGY_METRICS_PASSWORD }
+            }
+            steps {
+                git url: "http://10.63.32.87/sustainable-green-it/greenIT.git", credentialsId: "gitlab-syam", branch: "sustain_ui"
+                echo "Energy Metrics stage:"
+                echo "Server IP: ${params.ENERGY_METRICS_SERVER_IP}"
+                echo "Username: ${params.ENERGY_METRICS_USERNAME}"
+                // Add your build steps here
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Development' AND action_description = 'Energy metrics for application using Intel RAPL, Kepler, Schaphandre';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                    def updateStatusCommand2 = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Network' AND action_description = 'Compare energy efficiency for synchronous (REST vs gRPC) and Asynchronous (Kafka vs RabbitMQ) messaging between microservices';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand2}"
+                    """
+                    sh "rm -rf ~/.ansible/roles/DaggupatiPavan.anaconda"
+                    sh "ansible-galaxy role install DaggupatiPavan.anaconda"
+                  
+                    sh "echo ${params.ENERGY_METRICS_USERNAME}@${params.ENERGY_METRICS_SERVER_IP} > inventory"
+                    // sh "ansible-playbook -i inventory conda_install.yaml"
+                    // archiveArtifacts artifacts: 'codecarbon.csv', allowEmptyArchive: true
+                }
+            }
+        }
+        
+        stage('Workload Benchmarking') {
+            when {
+                expression { params.WORKLOAD_BENCHMARKING_APP }
+            }
+            steps {
+                echo "Workload Benchmarking stage:"
+                echo "Selected Processor: ${params.WORKLOAD_BENCHMARKING_APP}"
+                // Add your build steps here
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Workload allocation on energy efficient servers, VMs';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        
+        stage('Energy Utilization') {
+            steps {
+                echo "Energy Utilization stage:"
+                echo "Cloud Provider: ${params.CLOUD_PROVIDER}"
+                echo "Access Key: ${params.ACCESS_KEY}"
+                // Add your build steps here
+                  script {
+                //  def dataJson = """
+                //     {
+                //           "accessKey": "AKIAT7L3GT6E5F3Q73XX",
+                //           "accessToken": "z5X/CP1uq5JprTw1dRVbjePd+pWBac/Xk6wPsLnN",
+                //           "projectName": "${params.PROJECT_NAME}"
+                //           }
+                // """
+              
+                //      def curlCommand = """
+                //     curl -X POST --location 'http://10.63.14.112:8082/aws/metrics' \
+                //          -H 'Content-Type: application/json' \
+                //          -d '${dataJson}'
+                //     """
+                //      sh(curlCommand)
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Calculate energy utilization for provisioned resources and show recommendations to deployment teams';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        
+        stage('Resource Provisioning') {
+            steps {
+                echo "Resource Provisioning stage:"
+                // Add your build steps here
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Show energy efficient resource provisioning options during provisioning';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        
+        stage('Turn Off Workloads') {
+            // when {
+            //     expression { params.TURN_OFF_WORKLOADS_START_TIME }
+            // }
+            steps {
+                echo "Turn Off Workloads stage:"
+                echo "Weekdays: ${params.TURN_OFF_WORKLOADS_WEEKDAYS}"
+                echo "Start Time: ${params.TURN_OFF_WORKLOADS_START_TIME}"
+                echo "Stop Time: ${params.TURN_OFF_WORKLOADS_STOP_TIME}"
+                echo "Apply to Weekends: ${params.TURN_OFF_WORKLOADS_WEEKENDS}"
+                // Add your build steps here
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Turn off workloads and node pools outside of business hours';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        
+        stage('Unused Resources') {
+            steps {
+                echo "Unused Resources stage:"
+               
+                // Add your build steps here
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Identify and share report on unused resources';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        stage('Tagging Resources') {
+            steps {
+                echo "Tagging Resources stage:"
+                echo "Cloud Provider: ${params.TAGGING_RESOURCES_PROVIDER}"
+                echo "Access Key: ${params.TAGGING_RESOURCES_ACCESS_KEY}"
+                // Add your build steps here
+                script {
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Tagging of resources to track usage';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+        
+        stage('Prechecks') {
+            // when {
+            //     expression { params.PRECHECKS_TOOL }
+            // }
+            steps {
+                echo "Prechecks stage:"
+                echo "Tool Selected: ${params.PRECHECKS_TOOL}"
+                // Add your build steps here
+                script {
+                    // sh 'ansible-playbook prechecks.yaml'
+                    def updateStatusCommand = """
+                        UPDATE sustainability_assessments
+                        SET implemented = 'yes'
+                        WHERE project_name = '${params.PROJECT_NAME}' AND area = 'Deployment' AND action_description = 'Implement pre-checks for common issues in CI/CD pipeline to avoid failures in different stages of pipeline';
+                    """
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${updateStatusCommand}"
+                    """
+                }
+            }
+        }
+
+        stage('Update Maturity Matrix') {
+            steps {
+                echo 'Updating Maturity Matrix...'
+                script {
+                    def executeMySQLCommand = { String command ->
+                        sh """
+                            mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${command}"
+                        """
+                    }
+                    
+                    // Ensure the table exists and has the correct primary key
+                    executeMySQLCommand("""
+                        CREATE TABLE IF NOT EXISTS maturity_matrix (
+                            project_name VARCHAR(255) PRIMARY KEY,
+                            level INT
+                        );
+                    """)
+                    
+                    // Calculate the number of unique implemented 'yes' actions
+                    def countImplementedCommand = """
+                        SELECT COUNT(DISTINCT CONCAT(area, ':', action_description)) AS count_implemented
+                        FROM sustainability_assessments
+                        WHERE project_name = '${params.PROJECT_NAME}' AND implemented = 'yes';
+                    """
+                    def countResult = sh(script: "mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e \"${countImplementedCommand}\" -s -N", returnStdout: true).trim()
+                    def countImplemented = countResult.toInteger()
+                    
+                    // Calculate the maturity level and round it to the nearest whole number
+                    def rawMaturityLevel = countImplemented * 0.3
+                    def maturityLevel = (rawMaturityLevel + 0.5).toInteger()
+                    
+                    // Update or insert the maturity level into the maturity_matrix table
+                    def upsertMaturityMatrixCommand = """
+                        INSERT INTO maturity_matrix (project_name, level)
+                        VALUES ('${params.PROJECT_NAME}', ${maturityLevel})
+                        ON DUPLICATE KEY UPDATE level = VALUES(level);
+                    """
+                    executeMySQLCommand(upsertMaturityMatrixCommand)
+                    executeMySQLCommand("""
+                    UPDATE sustainability_projects
+                    SET sustainability_level = ${maturityLevel}
+                    WHERE application_name = '${params.PROJECT_NAME}';
+                """)
+                }
+            }
+        }
+
+        
+    }
+    post {
+        failure {
+            echo 'Pipeline failed'
+            
+            // Using a script block to define and call the function
+            script {
+                // Define the MySQL command execution function
+                def executeMySQLCommand = { String command ->
+                    sh """
+                        mysql -h ${env.MYSQL_HOST} -u ${env.MYSQL_USER} -p${env.MYSQL_PASSWORD} ${env.MYSQL_DATABASE} -e "${command}"
+                    """
+                }
+
+                // Define the SQL command to be executed
+                def sqlCommand = """
+                    UPDATE sustainability_projects
+                    SET sustainability_level = 'Failed'
+                    WHERE application_name = '${params.PROJECT_NAME}';
+                """
+                
+                // Execute the SQL command
+                executeMySQLCommand(sqlCommand)
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
