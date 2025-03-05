@@ -40,6 +40,9 @@ This Python framework facilitates the conversion of **Declarative Jenkins Pipeli
 python main.py --dir <directory_name>
 ```
 
+```
+example: python3 main.py  --dir Jenkins_files/
+```
 Ensure that your Jenkins pipelines and shared libraries are structured correctly for optimal results.
 
 ---
