@@ -1,0 +1,18 @@
+pipeline { 
+    agent any 
+    
+    stages {
+
+        stage('Run Commands over SSH') {
+            steps {
+                script {
+                    // Use the sshagent step to load the SSH credentials
+                    sshagent ([SSH_CREDENTIALS_ID]) {
+                        // Now you can run any commands that need SSH access
+                        sh 'ssh -o StrictHostKeyChecking=no user@hostname "your-remote-command"'
+                    }
+                }
+            }
+        }
+    }
+}

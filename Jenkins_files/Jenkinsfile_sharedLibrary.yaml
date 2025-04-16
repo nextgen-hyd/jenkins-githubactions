@@ -1,26 +1,40 @@
 name: CI/CD Pipeline
 'on':
-  push:
-    branches:
-    - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Enter Branch name here
+        default: master
+      url:
+        description: Enter Branch name here
+        default: https://github.com/Bhargav-manepalli/java-web-app-docker.git
 jobs:
-  build:
+  approval:
     runs-on: ubuntu-latest
+    needs: build
+    environment: production
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        repository: DaggupatiPavan/java-web-app-docker
+    - name: Await Manual Approval
+      run: echo "Approval required. Approve this job to continue."
+  buildUsingMaven:
+    runs-on: ubntu-latest
+    steps:
     - name: Build using Maven
       run: '#!/bin/bash
 
         mvn install'
+  call:
+    runs-on: ubntu-latest
+    steps:
     - name: call
       run: 'echo "Echo message #1"
 
         echo "Echo message #2"
 
         echo "Echo message #3"'
+  test:
+    runs-on: ubntu-latest
+    steps:
     - name: test
       run: 'echo "Echo message #1"
 

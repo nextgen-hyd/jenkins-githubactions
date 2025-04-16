@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+'on':
+  workflow_dispatch:
+    inputs:
+      PROJECT_NAME:
+        description: Project Name
+      PROJECT_DESCRIPTION:
+        description: Project description
+      CLOUD_PROVIDER:
+        description: Cloud Provider
+  schedule:
+  - cron: '1 13 * * 1-5 '
+  push:
+    branches:
+    - '!master'
+    - development
+    - main
+jobs:
+  Non-master:
+    if: github.ref != 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Non-master
+      run: '#!/bin/bash; echo "non-master"'
+  Development:
+    if: github.ref == 'refs/heads/development'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Development
+      run: echo "Building for development branch"
+  checkoutCode:
+    runs-on: ubntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: DaggupatiPavan/java-web-app-docker
+  build:
+    runs-on: ubntu-latest
+    steps:
+    - name: Build
+      run: '#!/bin/bash; mvn clean install'
+  release:
+    runs-on: ubntu-latest
+    steps:
+    - name: Release
+      run: '#!/bin/bash; curl -u ${ARTIFACTORY_USER}:${ARTIFACTORY_PASSWORD} -T target/your-artifact-${RELEASE_VERSION}.jar
+        ${ARTIFACTORY_REPO}/your-artifact-${RELEASE_VERSION}.jar; git tag -a v${RELEASE_VERSION}
+        -m; git push origin --tags'
+  approval:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    steps:
+    - name: Await Manual Approval
+      run: echo "Approval required. Approve this job to continue."
+  setUpSsh:
+    runs-on: ubntu-latest
+    steps:
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+  runCommandsOverSsh:
+    runs-on: ubntu-latest
+    steps:
+    - name: Run Commands over SSH
+      run: '#!/bin/bash; ssh -o StrictHostKeyChecking=no user@hostname "your-remote-command"'
+  syncToS3:
+    runs-on: ubntu-latest
+    steps:
+    - name: Sync to S3
+      run: '#!/bin/bash; aws s3 sync ./sync s3://${S3_BUCKET_NAME}/ --delete --region
+        ${REGION}'
+  uploadArtifact:
+    runs-on: ubntu-latest
+    steps:
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: my_artifact
+        path: output.pdf

@@ -1,0 +1,34 @@
+name: CI/CD Pipeline
+'on':
+  push:
+    branches: main
+  schedule:
+  - cron: '1 13 * * 1-5 '
+jobs:
+  checkoutCode:
+    runs-on: ubntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: DaggupatiPavan/java-web-app-docker
+  installAwsCli:
+    runs-on: ubntu-latest
+    steps:
+    - name: Install AWS CLI
+      run: "#!/bin/bash\nsudo apt-get update\n                    sudo apt-get install\
+        \ -y awscli"
+  configureAwsCli:
+    runs-on: ubntu-latest
+    steps:
+    - name: Configure AWS CLI
+      run: "#!/bin/bash\naws configure set aws_access_key_id $AWS_ACCESS_KEY_ID\n\
+        \                    aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY\n\
+        \                    aws configure set region $AWS_REGION"
+  deployToS3:
+    runs-on: ubntu-latest
+    steps:
+    - name: Deploy to S3
+      run: '#!/bin/bash
+
+        aws s3 sync ./sync s3://${S3_BUCKET_NAME}/ --delete --region ${REGION}'

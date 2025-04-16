@@ -1,0 +1,21 @@
+name: CI/CD Pipeline
+'on':
+  push:
+    branches: main
+jobs:
+  setUpSsh:
+    runs-on: ubntu-latest
+    steps:
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+  runCommandsOverSsh:
+    runs-on: ubntu-latest
+    steps:
+    - name: Run Commands over SSH
+      run: '|
+
+        #!/bin/bash
+
+        ssh -o StrictHostKeyChecking=no user@hostname "your-remote-command"'

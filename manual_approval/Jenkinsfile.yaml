@@ -50,22 +50,6 @@ jobs:
         mvn clean install
 
         echo maven completed'
-  setUpSonarqubeEnvironment:
-    runs-on: ubntu-latest
-    steps:
-    - name: Set up SonarQube environment
-      uses: sonarsource/sonarqube-scan-action@v1.0
-      with:
-        sonarQubeEnv:
-          credentialsId: sonarQube
-          installationName: QualityChecks
-  sonarqube:
-    runs-on: ubntu-latest
-    steps:
-    - name: SonarQube
-      run: '#!/bin/bash
-
-        mvn clean verify sonar:sonar -Dsonar.projectKey=genai -Dsonar.projectName=''genai'''
   test:
     runs-on: ubntu-latest
     steps:
@@ -73,36 +57,3 @@ jobs:
       run: '#!/bin/bash
 
         mvn test'
-  writeDockerfile:
-    runs-on: ubntu-latest
-    steps:
-    - name: Write Dockerfile
-      run: '#!/bin/bash
-
-        echo "FROM openjdk:8-jre" >> Dockerfile
-
-        echo "EXPOSE 8080" >> Dockerfile
-
-        echo "COPY target/*.jar /usr/src/myapp.jar" >> Dockerfile'
-  dockerBuild:
-    runs-on: ubntu-latest
-    steps:
-    - name: Docker Build
-      run: '#!/bin/bash
-
-        docker build -t pavan176/webapp:v.0.1 .'
-  logInToDockerHub:
-    runs-on: ubntu-latest
-    steps:
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-  pushToDockerhub:
-    runs-on: ubntu-latest
-    steps:
-    - name: Push to DockerHub
-      run: '#!/bin/bash
-
-        docker push pavan176/webapp:v.0.1'

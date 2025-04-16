@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'PROJECT_NAME', defaultValue: '', description: 'Project Name')
+        string(name: 'PROJECT_DESCRIPTION', defaultValue: '', description: 'Project description')
+        string(name: 'CLOUD_PROVIDER', defaultValue: '', description: 'Cloud Provider')
+        string(name: 'ACCESS_KEY', defaultValue: '', description: 'Access Key')
+        string(name: 'SECRET_KEY', defaultValue: '', description: 'Secret Key')
+        string(name: 'ENERGY_LEAKS_URL', defaultValue: '', description: 'Project URL for Energy Leaks')
+        string(name: 'ENERGY_LEAKS_BRANCH', defaultValue: '', description: 'Branch for Energy Leaks')
+        string(name: 'ML_JOB_CONSUMPTION_CODE_URL', defaultValue: '', description: 'Code URL for ML Job Consumption')
+        string(name: 'ENERGY_METRICS_SERVER_IP', defaultValue: '', description: 'Server IP for Energy Metrics')
+        string(name: 'ENERGY_METRICS_USERNAME', defaultValue: '', description: 'Username for Energy Metrics')
+        string(name: 'ENERGY_METRICS_PASSWORD', defaultValue: '', description: 'Password for Energy Metrics')
+        string(name: 'WORKLOAD_BENCHMARKING_APP', defaultValue: '', description: 'Enter app deploy URL')
+        string(name: 'WORKLOAD_BENCHMARKING_WORKLOAD', defaultValue: '', description: 'Enter workload deploy URL')
+        string(name: 'WORKLOAD_BENCHMARKING_INSTANCE', defaultValue: '', description: 'Enter Instance type')
+        string(name: 'TURN_OFF_WORKLOADS_WEEKDAYS', defaultValue: '', description: 'Weekdays for Turn Off Workloads')
+        string(name: 'TURN_OFF_WORKLOADS_START_TIME', defaultValue: '', description: 'Start time for Turn Off Workloads')
+        string(name: 'TURN_OFF_WORKLOADS_STOP_TIME', defaultValue: '', description: 'Stop time for Turn Off Workloads')
+        string(name: 'TURN_OFF_WORKLOADS_WEEKENDS', defaultValue: '', description: 'Apply to weekends for Turn Off Workloads')
+        string(name: 'PRECHECKS_TOOL', defaultValue: '', description: 'Tools selected for Prechecks')
+    }
+}

@@ -1,0 +1,56 @@
+pipeline { 
+    agent any 
+    parameters {
+        string(name: 'sourceCode_url', defaultValue: 'https://github.com/TCS/Nextgen.git', description: 'Enter Repository URL here')
+        string(name: 'branch', defaultValue: 'DevOps', description: 'Enter Branch name here')
+        choice(name: 'sourceCode_language', choices: ['Java'], description: 'Select Source Code Language')
+        choice(name: 'build_tool', choices: ['Maven'], description: 'Select Build Tool')
+        choice(name: 'code_quality_analysis', choices: ['SonarQube'], description: 'Select Code Quality Analysis Tool')
+        string(name: 'dockertag', defaultValue: 'latest', description: 'Enter Docker image tag here')
+        choice(name: 'environment', choices: ['DEV', 'QA', 'PROD'], description: 'Please select an environment to Deploy')
+    }
+    
+    stages {
+        stage('Git Clone') {
+            steps {
+                git branch: "${params.branch}", url: "DaggupatiPavan/java-web-app-docker", credentialsId: 'nextgen-devops-token'
+            }
+        }
+
+        stage('Build') {
+            tools {
+                maven 'mvn3.6.3'
+            }
+            steps {
+                sh 'mvn clean install'
+                sh 'echo maven completed'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+         stage('Approval') {
+                steps {
+                    input(message: 'Do you approve the deployment?', parameters: [
+                        choice(name: 'APPROVAL_CHOICE', type: 'String', description: 'Select an option', defaultValue: 'yes', choices: ['yes', 'no'])
+                    ])
+                }
+            }
+
+        stage('Deploy with Approval') {
+            when {
+                expression {
+                    return env.APPROVAL_CHOICE == 'yes'
+                }
+            }
+            steps {
+                    // Deployment steps
+                    sh 'echo "Deploying..."'
+                }
+        }
+    }
+}

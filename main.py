@@ -15,7 +15,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     search_directory = args.dir
-    shared_library_directory = args.dir+'vars'
+    shared_library_directory = args.dir+'/vars'
 
     # Find Jenkinsfiles
     jenkinsfiles = find_jenkinsfiles(search_directory)

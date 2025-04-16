@@ -41,6 +41,25 @@ pipeline {
             }
         }
 
+        stage('Approval') {
+                steps {
+                    input(message: 'Do you approve the deployment?', parameters: [
+                        choice(name: 'APPROVAL_CHOICE', type: 'String', description: 'Select an option', defaultValue: 'yes', choices: ['yes', 'no'])
+                    ])
+                }
+            }
+            stage('Deploy with Approval') {
+                when {
+                    expression {
+                        return env.APPROVAL_CHOICE == 'yes'
+                    }
+                }
+                steps {
+                    // Deployment steps
+                    sh 'echo "Deploying..."'
+                }
+            }
+
         stage('Write Dockerfile') {
             steps {
                 sh 'echo "FROM openjdk:8-jre" >> Dockerfile'
@@ -68,6 +87,29 @@ pipeline {
                 script {
                     sh "kubectl delete pod paltoalto || true"
                     sh "kubectl run paltoalto --image=pavan176/webapp:v.0.1"
+                }
+            }
+        }
+
+        stage('Convert to PDF') {
+           steps {
+               script {
+                   // Convert Document.txt to PDF using pandoc
+                   sh 'pandoc doc.txt -o output.pdf --pdf-engine=xelatex'
+                   // Archive the resulting PDF
+                   archiveArtifacts artifacts: 'output.pdf'
+               }
+           }
+        }
+
+        stage('Run Commands over SSH') {
+            steps {
+                script {
+                    // Use the sshagent step to load the SSH credentials
+                    sshagent ([SSH_CREDENTIALS_ID]) {
+                        // Now you can run any commands that need SSH access
+                        sh 'ssh -o StrictHostKeyChecking=no user@hostname "your-remote-command"'
+                    }
                 }
             }
         }

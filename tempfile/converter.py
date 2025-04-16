@@ -113,7 +113,7 @@ def convert_script_to_shell_lines(jenkins_script):
         # Default: treat as shell command (best effort)
         #else:
         #    shell_lines.append(line)
-    return "; ".join(shell_lines)
+    return "\n".join(shell_lines)
 
 
 #------------------------------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ def handle_build_stage(stage):
     #yaml.add_representer(str, literal_representer)
     yaml_content = {
     "name": "Build and Deploy",
-    "run":  "; ".join(commands) 
+    "run":  "\n".join(commands) 
     }
     print(yaml_content)
 
@@ -217,7 +217,7 @@ def handle_build_stage(stage):
     #import pdb;pdb.set_trace()
     maven_cmd_content = {
         'name': stage["stage_name"],
-        'run':  "; ".join(commands)
+        'run':  "\n".join(commands)
     }
 
     if type(maven_content)==dict and type(maven_cmd_content)==dict:
@@ -245,7 +245,7 @@ def handle_sonarqube_stage(stage):
 
     sonar_cmd_content =  {
             'name': stage["stage_name"],
-            'run': "; ".join(commands)
+            'run': "\n".join(commands)
             }
     if sonar_content and sonar_cmd_content:
         return sonar_content,sonar_cmd_content
@@ -269,7 +269,7 @@ def handle_docker_stage(stage):
 
     return {
             'name': stage["stage_name"],
-            'run': "; ".join(commands)
+            'run': "\n".join(commands)
             }
 
     
@@ -308,7 +308,7 @@ def handle_kubernetes_stage(stage):
 
     return {
             'name': stage["stage_name"],
-            'run': "; ".join(commands)
+            'run': "\n".join(commands)
             }
 
 # srinija's cod
@@ -353,7 +353,7 @@ def  handle_when_stages(stage):
     return {
             'if': branch_cond,
             'name': stage["stage_name"],
-            'run': "; ".join(commands)
+            'run': "\n".join(commands)
             }
 
 #New Function
@@ -396,7 +396,7 @@ def handle_sh_stages(stage):
 
     return {
         'name': stage["stage_name"],
-        'run': "; ".join(commands)
+        'run': "\n".join(commands)
     }
 
 def handle_artifacts(stage):
@@ -466,7 +466,7 @@ def extract_parameters(file_path):
                 if param_dict:
                     parameters.append(param_dict)
     print(parameters)
-    return parameters if len(parameters)<10 else parameters[:10]
+    return parameters
 
 
 def implementing_shared_libraries(shared_library_directory):
@@ -684,9 +684,10 @@ def parse_jenkinsfile(file,shared_library_directory):
             if re.search(r'script\s*\{', stage["content"]):
                 script_content = extract_block( stage["content"], "script")
                 script = convert_script_to_shell_lines(script_content)
+                print("script:", script)
                 dict_content = {
                     'name': stage["stage_name"],
-                    'run': script
+                    'run': "|\n" + script
                 }
                 manager.append_to_file(dict_content)
         

@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    
+    triggers {
+            cron('1 13 * * 1-5')
+        }
+
+    stages {
+
+        stage('Non-master'){
+            when {
+                not {
+                    branch 'master'
+                }
+            }
+            steps {
+                // sh 'do-non-master.sh'
+                echo "non-master"
+            }
+        }
+
+
+        stage('Development'){
+            when {
+                    branch 'development'
+            }
+            steps {
+                echo "Building for development branch"
+            }
+        }
+
+
+        // stage('Build'){
+        //     steps {
+        //         git branch: 'main', url: 'https://github.com/AbhishekRaoV/ubiq.git'
+        //     }
+        // }
+
+    }
+}
